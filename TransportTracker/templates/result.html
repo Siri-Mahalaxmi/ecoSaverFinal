@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}Your Carbon Footprint Results - Carbon Footprint Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="text-center mb-4">
+            <h1 class="display-5 fw-bold text-success mb-3">
+                <i class="fas fa-chart-pie me-2"></i>Your Carbon Footprint Results
+            </h1>
+            <div class="alert alert-info">
+                <h3 class="mb-0">Total CO₂ Emissions: <span class="text-success fw-bold">{{ total }} kg</span></h3>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="row mb-4">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Emissions Breakdown</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="pieChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Category Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="barChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Breakdown -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Detailed Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for category, value in breakdown.items() %}
+                    <div class="col-md-4 mb-3">
+                        <div class="text-center p-3 border rounded">
+                            <div class="category-icon mb-2">
+                                {% if category == 'transportation' %}
+                                    <i class="fas fa-car text-primary" style="font-size: 2rem;"></i>
+                                {% elif category == 'electricity' %}
+                                    <i class="fas fa-bolt text-warning" style="font-size: 2rem;"></i>
+                                {% elif category == 'diet' %}
+                                    <i class="fas fa-utensils text-success" style="font-size: 2rem;"></i>
+                                {% elif category == 'gas' %}
+                                    <i class="fas fa-fire text-danger" style="font-size: 2rem;"></i>
+                                {% elif category == 'waste' %}
+                                    <i class="fas fa-trash text-secondary" style="font-size: 2rem;"></i>
+                                {% elif category == 'water' %}
+                                    <i class="fas fa-tint text-info" style="font-size: 2rem;"></i>
+                                {% endif %}
+                            </div>
+                            <h6 class="text-uppercase fw-bold">{{ category.title() }}</h6>
+                            <p class="mb-0 h5 text-success">{{ value }} kg CO₂</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Personalized Suggestions -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Personalized Eco-Suggestions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for suggestion in suggestions %}
+                    <div class="col-lg-4 mb-3">
+                        <div class="alert alert-success h-100 mb-0">
+                            <p class="mb-0">{{ suggestion }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Eco Fact -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-seedling me-2"></i>Eco Fact of the Day</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0 text-center fst-italic">{{ eco_fact }}</p>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="text-center">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-success me-2">
+                <i class="fas fa-plus me-1"></i>Track Another Day
+            </a>
+            <a href="{{ url_for('history') }}" class="btn btn-success me-2">
+                <i class="fas fa-chart-line me-1"></i>View History & Trends
+            </a>
+            <button onclick="exportReport()" class="btn btn-outline-primary">
+                <i class="fas fa-download me-1"></i>Download Report
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Data for charts
+const breakdownData = {{ breakdown | tojson }};
+const categories = Object.keys(breakdownData);
+const values = Object.values(breakdownData);
+
+// Colors for charts (eco-friendly palette)
+const colors = [
+    '#28a745', // green
+    '#17a2b8', // cyan
+    '#ffc107', // yellow
+    '#dc3545', // red
+    '#6c757d', // gray
+    '#6f42c1'  // purple
+];
+
+// Pie Chart
+const pieCtx = document.getElementById('pieChart').getContext('2d');
+new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+        labels: categories.map(cat => cat.charAt(0).toUpperCase() + cat.slice(1)),
+        datasets: [{
+            data: values,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: ${value} kg CO₂ (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Bar Chart
+const barCtx = document.getElementById('barChart').getContext('2d');
+new Chart(barCtx, {
+    type: 'bar',
+    data: {
+        labels: categories.map(cat => cat.charAt(0).toUpperCase() + cat.slice(1)),
+        datasets: [{
+            label: 'CO₂ Emissions (kg)',
+            data: values,
+            backgroundColor: colors.map(color => color + '80'), // Add transparency
+            borderColor: colors,
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'CO₂ Emissions (kg)'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Categories'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `${context.parsed.y} kg CO₂`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Export Report Function
+function exportReport() {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    
+    // Get current date
+    const now = new Date();
+    const dateString = now.toLocaleDateString();
+    
+    // Create print-friendly HTML
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Carbon Footprint Report - ${dateString}</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 20px; 
+                    color: #333;
+                }
+                .header { 
+                    text-align: center; 
+                    margin-bottom: 30px;
+                    border-bottom: 2px solid #28a745;
+                    padding-bottom: 20px;
+                }
+                .logo { 
+                    color: #28a745; 
+                    font-size: 24px; 
+                    font-weight: bold;
+                }
+                .total-emissions {
+                    background: #d4edda;
+                    padding: 20px;
+                    border-radius: 10px;
+                    text-align: center;
+                    margin: 20px 0;
+                }
+                .breakdown-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 15px;
+                    margin: 20px 0;
+                }
+                .category-card {
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                    text-align: center;
+                    border-radius: 8px;
+                }
+                .suggestions {
+                    background: #f8f9fa;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                }
+                .suggestion-item {
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: white;
+                    border-left: 4px solid #28a745;
+                }
+                .eco-fact {
+                    background: #e7f3ff;
+                    padding: 15px;
+                    border-radius: 8px;
+                    font-style: italic;
+                    text-align: center;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="logo">🌿 EcoTracker - Carbon Footprint Report</div>
+                <p>Generated on ${dateString}</p>
+            </div>
+            
+            <div class="total-emissions">
+                <h2>Total CO₂ Emissions: ${values.reduce((a, b) => a + b, 0).toFixed(2)} kg</h2>
+            </div>
+            
+            <h3>Emissions Breakdown by Category</h3>
+            <div class="breakdown-grid">
+                ${categories.map((cat, index) => `
+                    <div class="category-card">
+                        <h4>${cat.charAt(0).toUpperCase() + cat.slice(1)}</h4>
+                        <p><strong>${values[index]} kg CO₂</strong></p>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="suggestions">
+                <h3>Personalized Eco-Suggestions</h3>
+                ${document.querySelectorAll('.alert-success p').length > 0 ? 
+                    Array.from(document.querySelectorAll('.alert-success p')).map(p => 
+                        `<div class="suggestion-item">${p.textContent}</div>`
+                    ).join('') : 
+                    '<p>No suggestions available</p>'
+                }
+            </div>
+            
+            <div class="eco-fact">
+                <h4>Eco Fact</h4>
+                <p>${document.querySelector('.fst-italic').textContent}</p>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center; color: #666; font-size: 12px;">
+                <p>Report generated by EcoTracker Carbon Footprint Tracker</p>
+                <p>Keep tracking to reduce your environmental impact!</p>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // Wait for content to load then print
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+}
+</script>
+{% endblock %}

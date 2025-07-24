@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Carbon Footprint Tracker</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-light">
+    <!-- Navigation (Minimal for auth) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-success" href="#">
+                <i class="fas fa-leaf me-2"></i>EcoTracker
+            </a>
+            
+            <!-- Theme Toggle -->
+            <div class="d-flex align-items-center">
+                <button id="themeToggle" class="btn btn-outline-secondary btn-sm" type="button">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Sign In Form -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card mt-5 login-card border-0">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="mb-3">
+                                <i class="fas fa-leaf text-success" style="font-size: 3rem;"></i>
+                            </div>
+                            <h2 class="fw-bold text-success">Welcome Back</h2>
+                            <p class="text-muted">Sign in to track your carbon footprint</p>
+                        </div>
+                        
+                        <form method="POST" action="{{ url_for('signin') }}">
+                            <div class="mb-3">
+                                <label for="username" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-2"></i>Username
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="username" name="username" required 
+                                       placeholder="Enter your username" value="{{ request.form.username if request.form.username }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-semibold">
+                                    <i class="fas fa-lock me-2"></i>Password
+                                </label>
+                                <input type="password" class="form-control form-control-lg" id="password" name="password" required 
+                                       placeholder="Enter your password">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="remember_me" name="remember_me">
+                                    <label class="form-check-label" for="remember_me">
+                                        Remember me
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="text-muted mb-0">Don't have an account?</p>
+                            <a href="{{ url_for('signup') }}" class="btn btn-outline-success btn-sm mt-2">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <i class="fas fa-heart text-success me-1"></i>
+                        Start tracking for a better planet
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+Core Features
+Daily CO₂ Tracking Form (index.html):
+
+Inputs for:
+
+Transportation:
+
+Dropdown to select vehicle type (Car, Bike, Bus, Train, Plane, Walking).
+
+Based on vehicle, show dropdown for fuel type (Petrol, Diesel, CNG, Electric).
+
+Allow multiple transport entries in one day (e.g., car + bus).
+
+Distance field in kilometers.
+
+Electricity Usage:
+
+Multi-select dropdown for appliances (AC, Fan, Fridge, Washing Machine, Heater, TV).
+
+Hours of usage input; backend calculates kWh using mapping (e.g., AC = 1.5 kWh/hr).
+
+Diet:
+
+Dropdown to select diet type (Vegetarian / Non-Vegetarian).
+
+If Non-Vegetarian, allow multi-select checkboxes for meat types (Chicken, Beef, Pork, Fish, Mutton).
+
+Frequency per week/day.
+
+Cooking Gas: Monthly LPG usage (kg or cylinders).
+
+Waste Generation: Amount in kg + “Do you recycle?” (Yes/No).
+
+Water Usage: Daily liters.
+
+Date Picker: To allow multiple daily entries and history tracking.
+
+Backend Logic (app.py):
+
+Use mock emission factors (e.g., 1 km petrol car = 0.2 kg CO₂, 1 kWh = 0.5 kg CO₂, beef > chicken > fish).
+
+Calculate category-wise CO₂ (Travel, Electricity, Diet, Waste, Water, Gas) and total daily CO₂.
+
+Generate personalized suggestions:
+
+Travel high → suggest carpool/metro.
+
+Food high → suggest reducing red meat.
+
+Electricity high → suggest energy-efficient appliances.
+
+Waste high → suggest recycling/composting.
+
+Store each day’s data (date, breakdown, total) in a JSON or CSV file for history and analytics.
+
+Results Page (result.html):
+
+Show total CO₂ + breakdown by category using Chart.js (bar or pie chart).
+
+Show 2–3 personalized suggestions.
+
+Show random eco fact at bottom (change on each refresh, no repeat until all shown).
+
+History & Analytics Page (history.html):
+
+Show previous entries from JSON/CSV as a table (date, total emissions).
+
+Include a line or bar chart showing emission trends over time.
+
+Fix bug: must support multiple entries and display correctly.
+
+Styling & Theme
+Eco-friendly minimalist design:
+
+Use soft greens, whites, earth tones for light mode.
+
+Use deep green, charcoal, muted tones for dark mode.
+
+Clean, modern typography and good spacing.
+
+Dark/Light theme toggle in top navbar (not bottom).
+
+Ensure colors, text, and charts adjust with theme switch.
+
+Responsive design (mobile-friendly).
+
+Tech Requirements
+Use Flask + Jinja templates (index.html, result.html, history.html).
+
+Static folder for style.css and optional JS.
+
+Store data in CSV or JSON (no DB needed).
+
+Code should be modular, clean, and bug-free (no Internal Server Errors).
+
+Extras
+Add random eco-fact feature (rotate facts without repeating until exhausted).
+
+Multi-select inputs for transport and diet should be user-friendly (checkboxes/dropdowns).
+
+Show clear breakdown: Travel, Electricity, Food, Water, Waste, Gas.
+
+Deployment
+Ensure code is compatible with AWS EC2 or Elastic Beanstalk (no Replit-specific hacks).
+
+Provide clear structure: app.py, templates/, static/style.css, data.json.
+
+Generate the full Flask project code with this structure and ensure all listed features work properly.
+

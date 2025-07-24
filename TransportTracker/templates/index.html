@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}Daily CO₂ Tracking - Carbon Footprint Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-4">
+            <h1 class="display-5 fw-bold text-success mb-3">
+                <i class="fas fa-leaf me-2"></i>Daily CO₂ Tracking
+            </h1>
+            <p class="lead text-muted">Track your daily carbon footprint and get personalized eco-suggestions</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('calculate') }}" id="trackingForm">
+            <!-- Date Picker -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Select Date</h5>
+                </div>
+                <div class="card-body">
+                    <input type="date" class="form-control" name="date" id="date" value="{{ today }}" required>
+                </div>
+            </div>
+            
+            <!-- Transportation -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-car me-2"></i>Transportation</h5>
+                </div>
+                <div class="card-body">
+                    <div id="transportContainer">
+                        <div class="transport-entry border rounded p-3 mb-3">
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Vehicle Type</label>
+                                    <select class="form-select vehicle-select" name="transport_vehicle_0" onchange="updateFuelOptions(0)">
+                                        <option value="">Select Vehicle</option>
+                                        <option value="Car">Car</option>
+                                        <option value="Bike">Bike</option>
+                                        <option value="Bus">Bus</option>
+                                        <option value="Train">Train</option>
+                                        <option value="Plane">Plane</option>
+                                        <option value="Walking">Walking</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Fuel Type</label>
+                                    <select class="form-select fuel-select" name="transport_fuel_0">
+                                        <option value="">Select Fuel</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Distance (km)</label>
+                                    <input type="number" class="form-control" name="transport_distance_0" step="0.1" min="0">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Action</label>
+                                    <button type="button" class="btn btn-outline-danger w-100" onclick="removeTransport(this)">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="transport_count" id="transportCount" value="1">
+                    <button type="button" class="btn btn-outline-success" onclick="addTransport()">
+                        <i class="fas fa-plus me-1"></i>Add Another Transport
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Electricity Usage -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Electricity Usage</h5>
+                </div>
+                <div class="card-body">
+                    <div id="applianceContainer">
+                        <div class="appliance-entry border rounded p-3 mb-3">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Appliance</label>
+                                    <select class="form-select" name="appliance_name_0">
+                                        <option value="">Select Appliance</option>
+                                        <option value="AC">Air Conditioner (1.5 kWh/hr)</option>
+                                        <option value="Fan">Fan (0.05 kWh/hr)</option>
+                                        <option value="Fridge">Refrigerator (0.15 kWh/hr)</option>
+                                        <option value="Washing Machine">Washing Machine (0.5 kWh/hr)</option>
+                                        <option value="Heater">Heater (2.0 kWh/hr)</option>
+                                        <option value="TV">Television (0.1 kWh/hr)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Hours Used</label>
+                                    <input type="number" class="form-control" name="appliance_hours_0" step="0.1" min="0">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label">Action</label>
+                                    <button type="button" class="btn btn-outline-danger w-100" onclick="removeAppliance(this)">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="appliance_count" id="applianceCount" value="1">
+                    <button type="button" class="btn btn-outline-success" onclick="addAppliance()">
+                        <i class="fas fa-plus me-1"></i>Add Another Appliance
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Diet -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-utensils me-2"></i>Diet</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Diet Type</label>
+                            <select class="form-select" name="diet_type" id="dietType" onchange="toggleMeatOptions()">
+                                <option value="Vegetarian">Vegetarian</option>
+                                <option value="Non-Vegetarian">Non-Vegetarian</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Meals per Week</label>
+                            <input type="number" class="form-control" name="diet_frequency" min="0" max="21" value="7">
+                        </div>
+                    </div>
+                    
+                    <div id="meatOptions" style="display: none;">
+                        <label class="form-label">Meat Types (select all that apply)</label>
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="meat_types" value="Chicken" id="chicken">
+                                    <label class="form-check-label" for="chicken">Chicken</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="meat_types" value="Beef" id="beef">
+                                    <label class="form-check-label" for="beef">Beef</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="meat_types" value="Pork" id="pork">
+                                    <label class="form-check-label" for="pork">Pork</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="meat_types" value="Fish" id="fish">
+                                    <label class="form-check-label" for="fish">Fish</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="meat_types" value="Mutton" id="mutton">
+                                    <label class="form-check-label" for="mutton">Mutton</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cooking Gas -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-fire me-2"></i>Cooking Gas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Monthly LPG Usage (kg)</label>
+                            <input type="number" class="form-control" name="gas_usage" step="0.1" min="0" placeholder="e.g., 14.2 (1 cylinder)">
+                            <small class="form-text text-muted">1 LPG cylinder ≈ 14.2 kg</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Waste Generation -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-trash me-2"></i>Waste Generation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Daily Waste (kg)</label>
+                            <input type="number" class="form-control" name="waste_amount" step="0.1" min="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Do you recycle?</label>
+                            <select class="form-select" name="recycles">
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Water Usage -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-tint me-2"></i>Water Usage</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Daily Water Usage (liters)</label>
+                            <input type="number" class="form-control" name="water_usage" step="1" min="0" placeholder="Average: 150-200 liters">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-lg px-5">
+                    <i class="fas fa-calculator me-2"></i>Calculate My Carbon Footprint
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Vehicle fuel mapping
+const vehicleFuels = {
+    'Car': ['Petrol', 'Diesel', 'CNG', 'Electric'],
+    'Bike': ['Petrol', 'Electric'],
+    'Bus': ['Diesel', 'CNG', 'Electric'],
+    'Train': ['Electric', 'Diesel'],
+    'Plane': ['Jet Fuel'],
+    'Walking': ['None']
+};
+
+function updateFuelOptions(index) {
+    const vehicleSelect = document.querySelector(`select[name="transport_vehicle_${index}"]`);
+    const fuelSelect = document.querySelector(`select[name="transport_fuel_${index}"]`);
+    
+    const selectedVehicle = vehicleSelect.value;
+    
+    // Clear existing options
+    fuelSelect.innerHTML = '<option value="">Select Fuel</option>';
+    
+    if (selectedVehicle && vehicleFuels[selectedVehicle]) {
+        vehicleFuels[selectedVehicle].forEach(fuel => {
+            const option = document.createElement('option');
+            option.value = fuel;
+            option.textContent = fuel;
+            fuelSelect.appendChild(option);
+        });
+    }
+}
+
+function addTransport() {
+    const container = document.getElementById('transportContainer');
+    const count = parseInt(document.getElementById('transportCount').value);
+    
+    const newEntry = document.createElement('div');
+    newEntry.className = 'transport-entry border rounded p-3 mb-3';
+    newEntry.innerHTML = `
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Vehicle Type</label>
+                <select class="form-select vehicle-select" name="transport_vehicle_${count}" onchange="updateFuelOptions(${count})">
+                    <option value="">Select Vehicle</option>
+                    <option value="Car">Car</option>
+                    <option value="Bike">Bike</option>
+                    <option value="Bus">Bus</option>
+                    <option value="Train">Train</option>
+                    <option value="Plane">Plane</option>
+                    <option value="Walking">Walking</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Fuel Type</label>
+                <select class="form-select fuel-select" name="transport_fuel_${count}">
+                    <option value="">Select Fuel</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Distance (km)</label>
+                <input type="number" class="form-control" name="transport_distance_${count}" step="0.1" min="0">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Action</label>
+                <button type="button" class="btn btn-outline-danger w-100" onclick="removeTransport(this)">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newEntry);
+    document.getElementById('transportCount').value = count + 1;
+}
+
+function removeTransport(button) {
+    const entry = button.closest('.transport-entry');
+    const container = document.getElementById('transportContainer');
+    
+    if (container.children.length > 1) {
+        entry.remove();
+        // Update count
+        const count = parseInt(document.getElementById('transportCount').value);
+        document.getElementById('transportCount').value = count - 1;
+    }
+}
+
+function addAppliance() {
+    const container = document.getElementById('applianceContainer');
+    const count = parseInt(document.getElementById('applianceCount').value);
+    
+    const newEntry = document.createElement('div');
+    newEntry.className = 'appliance-entry border rounded p-3 mb-3';
+    newEntry.innerHTML = `
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <label class="form-label">Appliance</label>
+                <select class="form-select" name="appliance_name_${count}">
+                    <option value="">Select Appliance</option>
+                    <option value="AC">Air Conditioner (1.5 kWh/hr)</option>
+                    <option value="Fan">Fan (0.05 kWh/hr)</option>
+                    <option value="Fridge">Refrigerator (0.15 kWh/hr)</option>
+                    <option value="Washing Machine">Washing Machine (0.5 kWh/hr)</option>
+                    <option value="Heater">Heater (2.0 kWh/hr)</option>
+                    <option value="TV">Television (0.1 kWh/hr)</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Hours Used</label>
+                <input type="number" class="form-control" name="appliance_hours_${count}" step="0.1" min="0">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Action</label>
+                <button type="button" class="btn btn-outline-danger w-100" onclick="removeAppliance(this)">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newEntry);
+    document.getElementById('applianceCount').value = count + 1;
+}
+
+function removeAppliance(button) {
+    const entry = button.closest('.appliance-entry');
+    const container = document.getElementById('applianceContainer');
+    
+    if (container.children.length > 1) {
+        entry.remove();
+        // Update count
+        const count = parseInt(document.getElementById('applianceCount').value);
+        document.getElementById('applianceCount').value = count - 1;
+    }
+}
+
+function toggleMeatOptions() {
+    const dietType = document.getElementById('dietType').value;
+    const meatOptions = document.getElementById('meatOptions');
+    
+    if (dietType === 'Non-Vegetarian') {
+        meatOptions.style.display = 'block';
+    } else {
+        meatOptions.style.display = 'none';
+        // Clear all checkboxes
+        const checkboxes = meatOptions.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+    }
+}
+
+// Initialize fuel options for first transport entry
+document.addEventListener('DOMContentLoaded', function() {
+    updateFuelOptions(0);
+});
+</script>
+{% endblock %}

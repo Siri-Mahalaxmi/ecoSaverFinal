@@ -1,0 +1,97 @@
+[
+  {
+    "date": "2025-07-23",
+    "total": 46.88,
+    "transportation": 5.76,
+    "electricity": 2.7,
+    "diet": 22.2,
+    "gas": 14.9,
+    "waste": 1.25,
+    "water": 0.07,
+    "breakdown": {
+      "transportation": 5.76,
+      "electricity": 2.7,
+      "diet": 22.2,
+      "gas": 14.9,
+      "waste": 1.25,
+      "water": 0.07
+    },
+    "timestamp": "2025-07-23T09:49:57.062569"
+  },
+  {
+    "date": "2025-07-20",
+    "total": 16.82,
+    "transportation": 0,
+    "electricity": 0.6,
+    "diet": 0,
+    "gas": 14.9,
+    "waste": 1.25,
+    "water": 0.07,
+    "breakdown": {
+      "transportation": 0,
+      "electricity": 0.6,
+      "diet": 0,
+      "gas": 14.9,
+      "waste": 1.25,
+      "water": 0.07
+    },
+    "timestamp": "2025-07-23T09:50:39.486494"
+  },
+  {
+    "date": "2025-07-25",
+    "total": 16.82,
+    "transportation": 0,
+    "electricity": 0.6,
+    "diet": 0,
+    "gas": 14.9,
+    "waste": 1.25,
+    "water": 0.07,
+    "breakdown": {
+      "transportation": 0,
+      "electricity": 0.6,
+      "diet": 0,
+      "gas": 14.9,
+      "waste": 1.25,
+      "water": 0.07
+    },
+    "timestamp": "2025-07-23T10:01:45.730862"
+  },
+  {
+    "date": "2025-07-02",
+    "total": 16.91,
+    "transportation": 0,
+    "electricity": 0.6,
+    "diet": 0,
+    "gas": 14.9,
+    "waste": 1.25,
+    "water": 0.16,
+    "breakdown": {
+      "transportation": 0,
+      "electricity": 0.6,
+      "diet": 0,
+      "gas": 14.9,
+      "waste": 1.25,
+      "water": 0.16
+    },
+    "timestamp": "2025-07-23T10:02:20.261244"
+  },
+  {
+    "date": "2025-07-19",
+    "total": 37.09,
+    "transportation": 9.45,
+    "electricity": 3.1,
+    "diet": 3.3,
+    "gas": 14.9,
+    "waste": 6.25,
+    "water": 0.09,
+    "breakdown": {
+      "transportation": 9.45,
+      "electricity": 3.1,
+      "diet": 3.3,
+      "gas": 14.9,
+      "waste": 6.25,
+      "water": 0.09
+    },
+    "timestamp": "2025-07-23T10:10:18.996194"
+  }
+]
